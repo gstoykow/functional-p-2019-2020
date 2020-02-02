@@ -9,30 +9,37 @@ module Stuff
   , on
   ) where
 
-group :: Eq a => [a] -> [[a]]
-group = undefined
 
--- Not mandatory, delete if you don't want this.
+
 insertBy :: (a -> a -> Ordering) -> a -> [a] -> [a]
-insertBy = undefined
+insertBy _ x [] = [x]
+insertBy o x (y:ys) 
+  | (o x y) == LT || (o x y) == EQ = x:y:ys
+  | otherwise =  y:(insertBy o x ys)
 
 sortBy :: (a -> a -> Ordering) -> [a] -> [a]
-sortBy = undefined
+sortBy _ [] = []
+sortBy o (x:xs) = insertBy o x (sortBy o xs)
 
 groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
-groupBy = undefined
+groupBy _ [] = []
+groupBy p (x:xs) = (takeWhile (p x) (x:xs)):groupBy p (dropWhile (p x) xs)
+
+group :: Eq a => [a] -> [[a]]
+group xs = groupBy (==) xs
 
 on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
-on = undefined
+on fn f x y = fn (f x) (f y)
 
 (&&&) :: (a -> b) -> (a -> c) -> a -> (b, c)
-(&&&) = undefined
+(&&&) fn f x  = (fn x, f x)
 
 sortOn :: Ord b => (a -> b) -> [a] -> [a]
-sortOn = undefined
+sortOn f = sortBy (compare `on` f)
 
 groupOn :: Eq b => (a -> b) -> [a] -> [[a]]
-groupOn = undefined
+groupOn f = groupBy ((==) `on` f)
 
 classifyOn :: Ord b => (a -> b) -> [a] -> [[a]]
-classifyOn = undefined
+classifyOn _ [] = []
+classifyOn f (x:xs) = (groupOn f (sortOn f (x:xs)))
